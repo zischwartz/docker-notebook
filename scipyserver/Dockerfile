@@ -5,13 +5,9 @@ MAINTAINER IPython Project <ipython-dev@scipy.org>
 # VOLUME /notebooks
 WORKDIR /notebooks
 
-EXPOSE 8888
+EXPOSE 8888 80
 
-# You can mount your own SSL certs as necessary here
-# ENV PEM_FILE /key.pem
-# $PASSWORD will get `unset` within notebook.sh, turned into an IPython style hash
-# ENV PASSWORD Dont make this your default
-ENV USE_HTTP 0
+ENV USE_HTTP 1
 
 # RUN apt-get install libfreeimage3
 
@@ -27,9 +23,21 @@ COPY requirements.txt requirements.txt
 RUN pip2.7 install -r requirements.txt
 
 RUN unset PASSWORD
+
 RUN mkdir images
 
-RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out key.pem \
-    -subj "/C=XX/ST=XX/L=XX/O=dockergenerated/CN=dockergenerated"
+# Install nginx.
+RUN \
+  add-apt-repository -y ppa:nginx/stable && \
+  apt-get update && \
+  apt-get install -y nginx && \
+  rm -rf /var/lib/apt/lists/* && \
+  chown -R www-data:www-data /var/lib/nginx
 
-CMD ipython3 notebook --no-browser --port 8888 --ip=* --NotebookApp.allow_origin=*  --certfile=key.pem
+
+ADD public /var/www/html
+
+ADD start.sh /
+RUN chmod u+x /start.sh
+
+CMD ["/start.sh"]
