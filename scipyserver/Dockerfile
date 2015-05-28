@@ -69,8 +69,10 @@ RUN bash -l -c 'for v in $(cat /root/versions.txt); do rbenv global $v; gem inst
 RUN apt-get install libzmq3-dev -y
 
 RUN bash -l -c "gem install iruby"
+RUN bash -l -c "gem install gnuplot"
 
-
+# for graphs in iruby
+RUN apt-get install gnuplot -y
 # RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out key.pem \
     # -subj "/C=XX/ST=XX/L=XX/O=dockergenerated/CN=dockergenerated"
 
